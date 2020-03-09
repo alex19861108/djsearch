@@ -144,14 +144,7 @@ STATIC_URL = '/static/'
 
 
 # ============== third party app settings ==============
-# Raven
-import raven
-RAVEN_CONFIG = {
-    'dsn': 'http://afe50b021a4049558de19d18d40388d4:866b9b6eeb8d423f890f1a42060d2e76@sentry.vxiaocheng.com/5',
-    # If you are using git, you can also automatically configure the
-    # release based on the git info.
-    # 'release': raven.fetch_git_sha(os.path.abspath(os.pardir)),
-}
+SENTRY_DSN = "http://cb1b4f982c7142dab41c1324ab3d7459@localhost:9000/3"
 
 # 跨域增加忽略
 CORS_ALLOW_CREDENTIALS = True
