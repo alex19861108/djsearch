@@ -2,13 +2,14 @@
 FROM rackspacedot/python37:latest
 MAINTAINER liuwei.bj@ccbft.com
 
-RUN mkdir -p /home/work
+RUN mkdir -p /home/work/djsearch
 
-COPY ./ /home/work
+COPY ./ /home/work/djsearch
+
+WORKDIR /home/work/djsearch
 
 RUN pip install -r conf/requirements.txt
 
 EXPOSE 8000
 
-WORKDIR /home/work/
-CMD ["uwsgi", "conf/uwsgi.ini"]
+CMD ["uwsgi", "--ini", "conf/uwsgi.ini"]

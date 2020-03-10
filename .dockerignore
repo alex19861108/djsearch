@@ -1,0 +1,9 @@
+.git
+.idea
+venv
+dist
+db.sqlite3
+*.pyc
+*.bak
+*.egg-info
+_git
