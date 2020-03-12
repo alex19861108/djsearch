@@ -83,24 +83,12 @@ WSGI_APPLICATION = 'djsearch.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
 
-if DEBUG:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-        }
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
     }
-else:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.mysql',
-            'NAME': 'search',
-            'USER': 'root',
-            'PASSWORD': '123456',
-            'HOST': 'localhost',
-            'PORT': '3306',
-        }
-    }
+}
 
 
 # Password validation
@@ -125,11 +113,9 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/3.0/topics/i18n/
 
-# LANGUAGE_CODE = 'en-us'
-LANGUAGE_CODE = 'zh-hans'
+LANGUAGE_CODE = 'en-us'
 
-# TIME_ZONE = 'UTC'
-TIME_ZONE = 'Asia/Shanghai'
+TIME_ZONE = 'UTC'
 
 USE_I18N = True
 
@@ -144,7 +130,7 @@ STATIC_URL = '/static/'
 
 
 # ============== third party app settings ==============
-SENTRY_DSN = "http://cb1b4f982c7142dab41c1324ab3d7459@localhost:9000/3"
+SENTRY_DSN = ""
 
 # 跨域增加忽略
 CORS_ALLOW_CREDENTIALS = True
@@ -173,7 +159,7 @@ CORS_ALLOW_HEADERS = (
 )
 
 
-# ============== my app settings ==============
-BUILDER = {
-    "ES_HOSTS": ["http://62.234.146.101:9200"]
-}
+try:
+    from . import local_settings
+except ImportError:
+    pass
