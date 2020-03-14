@@ -19,7 +19,7 @@ class IndicesView(View):
 
 class SearchMixin:
     HIGHLIGHT_JOINER = " "
-    ABSTRCT_COUNT = 200
+    ABSTRCT_MAX_LENGTH = 200
 
     def __init__(self):
         self.conn = Elasticsearch(hosts=settings.BUILDER.get("ES_HOSTS"))
@@ -61,16 +61,21 @@ class SearchMixin:
 
         hits = result["hits"]["hits"]
         data = [item["_source"] for item in hits]
-        highlight = [item["highlight"] for item in hits if hasattr(item, "highlight")]
+        highlight = [item["highlight"] for item in hits if "highlight" in item.keys()]
         if highlight:
             for idx, item in enumerate(data):
                 hl = highlight[idx]
                 for k, v in hl.items():
                     if k in item.keys():
                         if isinstance(v, list):
-                            item[k] = SearchMixin.HIGHLIGHT_JOINER.join(v)[:SearchMixin.ABSTRCT_COUNT]
+                            item[k] = SearchMixin.HIGHLIGHT_JOINER.join(v)[:SearchMixin.ABSTRCT_MAX_LENGTH]
                         else:
                             item[k] = v
+        else:
+            for item in data:
+                for k, v in item.items():
+                    if isinstance(v, str):
+                        item[k] = v[:SearchMixin.ABSTRCT_MAX_LENGTH]
         return result["hits"]["total"]["value"], data
 
 
