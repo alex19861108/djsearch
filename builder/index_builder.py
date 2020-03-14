@@ -2,27 +2,28 @@
 @Author         :  liuwei
 @Version        :  0.0.1
 ------------------------------------
-@File           :  build_resource.py
+@File           :  build_index.py
 @Description    :  
-@CreateTime     :  2020/2/21 15:58
+@CreateTime     :  2020/3/14 19:26
 """
 import requests
+import datetime
 import json
 import math
 import logging
 import traceback
-from elasticsearch import Elasticsearch
+from elasticsearch import Elasticsearch, TransportError
 from crawler.models import Resource
 from djsearch import settings
 
 log = logging.getLogger(__name__)
 
 
-class Builder:
-    conn = Elasticsearch(hosts=settings.BUILDER.get("ES_HOSTS"))
+class IndexBuilder:
+    def __init__(self):
+        self.conn = Elasticsearch(hosts=settings.BUILDER.get("ES_HOSTS"))
 
-    @staticmethod
-    def load_resource(obj):
+    def load_resource(self, obj):
         """
         资源入库
         """
@@ -35,8 +36,8 @@ class Builder:
         mapping = json.loads(obj.mapping)
 
         # 建index，建mapping
-        if not Builder.conn.indices.exists(index):
-            Builder.conn.indices.create(index, {"mappings": {"properties": mapping}})
+        if not self.conn.indices.exists(index):
+            self.conn.indices.create(index, {"mappings": {"properties": mapping}})
 
         # 数据入库
         is_last_page = False
@@ -71,22 +72,52 @@ class Builder:
                 # 主键
                 id = document.get("id")
                 # 删除标记
-                if Builder.conn.exists(index, id) is True:
+                if self.conn.exists(index, id) is True:
                     if document.get("deleted", None):
-                        Builder.conn.delete(index, id)
+                        self.conn.delete(index, id)
                     else:
-                        Builder.conn.update(index, id=id, body={"doc": document})
+                        self.conn.update(index, id=id, body={"doc": document})
                 else:
-                    Builder.conn.index(index, document, id=id)
+                    self.conn.index(index, document, id=id)
 
-    @staticmethod
-    def build():
+    def build(self):
         for row in Resource.objects.filter(deleted=0):
             try:
-                Builder.load_resource(row)
+                self.load_resource(row)
             except Exception as e:
                 traceback.print_exc(e)
 
+    def reindex(self, index):
+        index_old = "{}_old.{}".format(index, datetime.date.today())
+        index_new = "{}_new.{}".format(index, datetime.date.today())
+        body = {
+            "source": {
+                "index": index
+            },
+            "dest": {
+                "index": index_new
+            }
+        }
+        self.conn.reindex(body=body)
 
-def process():
-    Builder.build()
+        #
+        body = {
+            "actions": [
+                {
+                    "remove": {
+                        "index": index,
+                        "alias": index_old
+                    }
+                },
+                {
+                    "add": {
+                        "index": index_new,
+                        "alias": index
+                    }
+                }
+            ]
+        }
+        try:
+            return self.conn.transport.perform_request("POST", "/_alias", body=body)
+        except TransportError:
+            return False

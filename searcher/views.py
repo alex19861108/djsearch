@@ -18,6 +18,9 @@ class IndicesView(View):
 
 
 class SearchMixin:
+    HIGHLIGHT_JOINER = " "
+    ABSTRCT_COUNT = 200
+
     def __init__(self):
         self.conn = Elasticsearch(hosts=settings.BUILDER.get("ES_HOSTS"))
         self.index = ",".join([item.name for item in Resource.objects.filter(deleted=0)])
@@ -65,7 +68,7 @@ class SearchMixin:
                 for k, v in hl.items():
                     if k in item.keys():
                         if isinstance(v, list):
-                            item[k] = "...".join(v)
+                            item[k] = SearchMixin.HIGHLIGHT_JOINER.join(v)[:SearchMixin.ABSTRCT_COUNT]
                         else:
                             item[k] = v
         return result["hits"]["total"]["value"], data
@@ -79,7 +82,7 @@ class SearchView(SearchMixin, View):
         field根据mapping计算出来
         """
         index = request.GET.get("index").replace(" ", "") if request.GET.get("index") else self.index
-        wd = request.GET.get("wd", "")
+        wd = request.GET.get("wd", "").strip()
         page = int(request.GET.get("page", 1))
         size = int(request.GET.get("size", 10))
         start = (page - 1) * size
@@ -103,7 +106,7 @@ class SugView(SearchMixin, View):
             return self.term_suggester(request, index)
 
     def portal_suggester(self, request, index="portal"):
-        wd = request.GET.get("wd", "")
+        wd = request.GET.get("wd", "").strip()
         page = int(request.GET.get("page", 1))
         size = int(request.GET.get("size", 1000))
         start = (page - 1) * size
@@ -199,7 +202,7 @@ class SugView(SearchMixin, View):
         })
 
     def completion_suggester(self, request, index, size=20):
-        wd = request.GET.get("wd", "")
+        wd = request.GET.get("wd", "").strip()
         fields = self.generate_fields(index)
         body = {
             "suggest": {
@@ -229,7 +232,7 @@ class SugView(SearchMixin, View):
         })
 
     def phrase_suggester(self, request, index, size=5):
-        wd = request.GET.get("wd", "")
+        wd = request.GET.get("wd", "").strip()
         field = "title"
         body = {
             "suggest": {
@@ -258,7 +261,7 @@ class SugView(SearchMixin, View):
         })
 
     def term_suggester(self, request, index, size=5):
-        wd = request.GET.get("wd", "")
+        wd = request.GET.get("wd", "").strip()
         field = "content"
         body = {
             "suggest": {

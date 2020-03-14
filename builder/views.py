@@ -1,10 +1,38 @@
 from django.shortcuts import render
 
 # Create your views here.
+import logging
+from django.views.generic import View
+from builder.index_builder import IndexBuilder
 from djsearch.utils import JsonResponse
+
+log = logging.getLogger(__name__)
 
 
 def build(request):
-    from builder.build_resource import Builder
-    Builder.build()
+    IndexBuilder().build()
     return JsonResponse({"status": 0, "message": "success", "data": []})
+
+
+class ReIndexView(View):
+    def get(self, request):
+        index = request.get("index", None)
+        if not index:
+            return JsonResponse({
+                "status": -1,
+                "message": "param index is required",
+                "data": []
+            })
+
+        if IndexBuilder().reindex(index):
+            return JsonResponse({
+                "status": 0,
+                "message": "reindex success",
+                "data": []
+            })
+        else:
+            return JsonResponse({
+                "status": 1,
+                "message": "reindex failed",
+                "data": []
+            })

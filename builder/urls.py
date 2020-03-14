@@ -11,4 +11,5 @@ from builder import views
 
 urlpatterns = [
     path('', views.build),
+    path('reindex', views.ReIndexView.as_view()),
 ]

@@ -160,6 +160,6 @@ CORS_ALLOW_HEADERS = (
 
 
 try:
-    from . import local_settings
+    from djsearch.local_settings import *
 except ImportError:
     pass
