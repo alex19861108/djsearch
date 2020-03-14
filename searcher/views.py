@@ -43,9 +43,28 @@ class SearchMixin:
             "query": {
                 "multi_match": {
                     "query": wd,
+                    "type": "best_fields",
                     "fields": fields,
                 }
             },
+            # "query": {
+            #     "bool": {
+            #         "should": [{
+            #             "match_phrase": {
+            #                 "title": {
+            #                     "query": wd,
+            #                     "slop": 1
+            #                 }
+            #             }
+            #         }, {
+            #             "multi_match": {
+            #                 "query": wd,
+            #                 "type": "best_fields",
+            #                 "fields": fields,
+            #             }
+            #         }]
+            #     }
+            # },
             "highlight": {
                 "pre_tags": ['<b style="color:red;">'],
                 "post_tags": ['</b>'],
