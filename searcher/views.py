@@ -132,13 +132,15 @@ class SugView(SearchMixin, View):
     def portal_suggester(self, request, index="portal"):
         wd = request.GET.get("wd", "").strip()
         page = int(request.GET.get("page", 1))
-        size = int(request.GET.get("size", 1000))
+        size = int(request.GET.get("size", 10))
         start = (page - 1) * size
 
         sort = [
             {"level1_ref.title": {"nested": {"path": "level1_ref"}}},
             {"level2_ref.title": {"nested": {"path": "level2_ref"}}}
         ]
+
+        # 产品sug搜索时最多显示10条记录，防止搜索出的内容太多，导致下拉列表太长
         total, data = self._search(wd, index, start=start, size=size, sort=sort)
 
         level1_children = list()
@@ -156,14 +158,15 @@ class SugView(SearchMixin, View):
                         "breadcrumb": item["breadcrumb"]
                     })
                 else:
-                    level2_children.append({
-                        "name": last_item["level2_ref"]["name"],
-                        "url": last_item["level2_ref"]["url"],
-                        "title": last_item["level2_ref"]["title"],
-                        "desc": last_item["level2_ref"]["desc"],
-                        # "breadcrumb": last_item["breadcrumb"],
-                        "children": level3_children
-                    })
+                    if level3_children:
+                        level2_children.append({
+                            "name": last_item["level2_ref"]["name"],
+                            "url": last_item["level2_ref"]["url"],
+                            "title": last_item["level2_ref"]["title"],
+                            "desc": last_item["level2_ref"]["desc"],
+                            # "breadcrumb": last_item["breadcrumb"],
+                            "children": level3_children
+                        })
                     level3_children = list()
                     level3_children.append({
                         "name": item["name"],
@@ -284,7 +287,7 @@ class SugView(SearchMixin, View):
             "data": data
         })
 
-    def term_suggester(self, request, index, size=5):
+    def term_suggester(self, request, index, size=10):
         wd = request.GET.get("wd", "").strip()
         field = "content"
         body = {
