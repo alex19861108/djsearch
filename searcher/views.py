@@ -129,6 +129,20 @@ class SugView(SearchMixin, View):
         else:
             return self.term_suggester(request, index)
 
+    def optimize_level3_nodes(self, nodes):
+        """
+        三级菜单中会存在breadcrumb为空的，需要删除
+        :param nodes:
+        :return:
+        """
+        if len(nodes) == 1:
+            return nodes
+
+        for idx, node in enumerate(nodes):
+            if not node["breadcrumb"]:
+                del nodes[idx]
+        return nodes
+
     def portal_suggester(self, request, index="portal"):
         wd = request.GET.get("wd", "").strip()
         page = int(request.GET.get("page", 1))
@@ -158,15 +172,15 @@ class SugView(SearchMixin, View):
                         "breadcrumb": item["breadcrumb"]
                     })
                 else:
-                    if level3_children:
-                        level2_children.append({
-                            "name": last_item["level2_ref"]["name"],
-                            "url": last_item["level2_ref"]["url"],
-                            "title": last_item["level2_ref"]["title"],
-                            "desc": last_item["level2_ref"]["desc"],
-                            # "breadcrumb": last_item["breadcrumb"],
-                            "children": level3_children
-                        })
+                    level2_children.append({
+                        "name": last_item["level2_ref"]["name"],
+                        "url": last_item["level2_ref"]["url"],
+                        "title": last_item["level2_ref"]["title"],
+                        "desc": last_item["level2_ref"]["desc"],
+                        # "breadcrumb": last_item["breadcrumb"],
+                        "children": self.optimize_level3_nodes(level3_children)
+                    })
+
                     level3_children = list()
                     level3_children.append({
                         "name": item["name"],
@@ -183,7 +197,7 @@ class SugView(SearchMixin, View):
                         "title": last_item["level2_ref"]["title"],
                         "desc": last_item["level2_ref"]["desc"],
                         # "breadcrumb": last_item["level2_ref"]["breadcrumb"],
-                        "children": level3_children
+                        "children": self.optimize_level3_nodes(level3_children)
                     })
                     level1_children.append({
                         "name": last_item["level1_ref"]["name"],
@@ -211,7 +225,7 @@ class SugView(SearchMixin, View):
                 "url": last_item["level2_ref"]["url"],
                 "title": last_item["level2_ref"]["title"],
                 "desc": last_item["level2_ref"]["desc"],
-                "children": level3_children
+                "children": self.optimize_level3_nodes(level3_children)
             })
             level1_children.append({
                 "name": last_item["level1_ref"]["name"],
