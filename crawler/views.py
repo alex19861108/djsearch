@@ -38,7 +38,7 @@ def api_portal(request):
     page = int(request.GET.get("page", 1))
     size = int(request.GET.get("size", 10))
 
-    portal = Resource.objects.filter(name="portal")
+    portal = Resource.objects.filter(name="portal").first()
     if not portal:
         return JsonResponse({
             "status": -1,

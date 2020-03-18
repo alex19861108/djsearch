@@ -14,16 +14,16 @@ TIME_ZONE = 'Asia/Shanghai'
 SENTRY_DSN = "http://cb1b4f982c7142dab41c1324ab3d7459@localhost:9000/3"
 
 # ============== my app settings ==============
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.mysql',
-#         'NAME': 'search',
-#         'USER': 'root',
-#         'PASSWORD': '123456',
-#         'HOST': 'localhost',
-#         'PORT': '3306',
-#     }
-# }
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'search',
+        'USER': 'root',
+        'PASSWORD': '123456',
+        'HOST': 'localhost',
+        'PORT': '3306',
+    }
+}
 
 BUILDER = {
     "ES_HOSTS": ["http://62.234.146.101:9200"]
