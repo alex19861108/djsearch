@@ -20,7 +20,7 @@ from djsearch import views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('health/', views.health),
-    re_path('api/crawl/', include(('crawler.urls', 'crawler'), namespace='crawler')),
-    re_path('api/build/', include(('builder.urls', 'builder'), namespace='builder')),
-    re_path('api/', include(('searcher.urls', 'searcher'), namespace='searcher')),
+    re_path('crawler/crawl/', include(('crawler.urls', 'crawler'), namespace='crawler')),
+    re_path('builder/', include(('builder.urls', 'builder'), namespace='builder')),
+    re_path('searcher/', include(('searcher.urls', 'searcher'), namespace='searcher')),
 ]

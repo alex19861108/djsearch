@@ -1,5 +1,5 @@
-#FROM docker.caas.dev.jh/basic/python:3.7.5
-FROM rackspacedot/python37:latest
+FROM docker.caas.dev.jh/basic/python:3.7.5
+#FROM rackspacedot/python37:latest
 MAINTAINER liuwei.bj@ccbft.com
 
 RUN mkdir -p /home/work/djsearch
@@ -8,7 +8,14 @@ COPY ./ /home/work/djsearch
 
 WORKDIR /home/work/djsearch
 
-RUN pip install -r conf/requirements.txt
+#RUN pip install -r conf/requirements.txt
+RUN pip install -i http://128.196.0.125:8081/repository/Pypi_Group_bjkfzx/simple/ --trusted-host 128.196.0.125 pip=20.0.2 -U \
+    && pip config set global.index-url http://128.196.0.125:8081/repository/Pypi_Group_bjkfzx/simple/ \
+    && pip config set global.timeout 6000 \
+    && pip config set install.trusted-host 128.196.0.125 \
+    && pip install -r conf/requirements.txt
+
+RUN sed -i '36,37d' /usr/local/lib/python3.7/site-packages/django/db/backends/mysql/base.py
 
 EXPOSE 8000
 

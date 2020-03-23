@@ -4,13 +4,14 @@ from django.shortcuts import render
 import logging
 from django.views.generic import View
 from builder.index_builder import IndexBuilder
+from builder.tasks import add
 from djsearch.utils import JsonResponse
 
 log = logging.getLogger(__name__)
 
 
-def build(request):
-    IndexBuilder().build()
+def add_delay(request):
+    add.delay(2, 3)
     return JsonResponse({"status": 0, "message": "success", "data": []})
 
 

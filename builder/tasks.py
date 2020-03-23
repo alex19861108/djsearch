@@ -8,9 +8,13 @@
 """
 
 from __future__ import absolute_import, unicode_literals
+import logging
 
 from celery import shared_task
+from djsearch.celery import app
 from builder.index_builder import IndexBuilder
+
+log = logging.getLogger(__name__)
 
 
 @shared_task
@@ -20,4 +24,5 @@ def build():
 
 @shared_task
 def add(x, y):
+    log.info("==== receive shared_task ====")
     return x + y
