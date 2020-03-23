@@ -41,6 +41,8 @@ INSTALLED_APPS = [
     # third party apps
     'raven.contrib.django.raven_compat',
     'corsheaders',
+    'django_celery_results',
+    'django_celery_beat',
 
     # my apps
     'crawler',

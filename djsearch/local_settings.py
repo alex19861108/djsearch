@@ -6,14 +6,13 @@
 @Description    :  
 @CreateTime     :  2020/3/12 16:30
 """
+#############################
+# system settings
+#############################
 ALLOWED_HOSTS = ['*']
 LANGUAGE_CODE = 'zh-hans'
 TIME_ZONE = 'Asia/Shanghai'
 
-# ============== third party app settings ==============
-SENTRY_DSN = "http://cb1b4f982c7142dab41c1324ab3d7459@localhost:9000/3"
-
-# ============== my app settings ==============
 # DATABASES = {
 #     'default': {
 #         'ENGINE': 'django.db.backends.mysql',
@@ -25,6 +24,30 @@ SENTRY_DSN = "http://cb1b4f982c7142dab41c1324ab3d7459@localhost:9000/3"
 #     }
 # }
 
+#############################
+# third party app settings
+#############################
+# sentry
+SENTRY_DSN = "http://cb1b4f982c7142dab41c1324ab3d7459@localhost:9000/3"
+
+
+#############################
+# my app settings
+#############################
 BUILDER = {
     "ES_HOSTS": ["http://62.234.146.101:9200"]
 }
+
+#############################
+# celery setting.
+#############################
+CELERY_BROKER_URL = 'redis://127.0.0.1:6379/1'
+CELERY_TIMEZONE = 'Asia/Shanghai'
+CELERY_BEAT_SCHEDULER = 'djcelery.schedulers.DatabaseScheduler'
+
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+
+CELERY_RESULT_BACKEND = 'django-db'
+CELERY_CACHE_BACKEND = 'django-cache'
