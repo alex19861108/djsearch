@@ -19,6 +19,7 @@ class IndicesView(View):
 
 class SearchMixin:
     HIGHLIGHT_JOINER = " "
+    ABSTRCT_MIN_LENGTH = 5
     ABSTRCT_MAX_LENGTH = 200
 
     def __init__(self):
@@ -87,14 +88,18 @@ class SearchMixin:
                 for k, v in hl.items():
                     if k in item.keys():
                         if isinstance(v, list):
-                            item[k] = SearchMixin.HIGHLIGHT_JOINER.join(v)[:SearchMixin.ABSTRCT_MAX_LENGTH]
+                            abstract = SearchMixin.HIGHLIGHT_JOINER.join(v)[:SearchMixin.ABSTRCT_MAX_LENGTH]
+                            if len(abstract) >= SearchMixin.ABSTRCT_MIN_LENGTH:
+                                item[k] = abstract
+                            else:
+                                item[k] = item[k][:SearchMixin.ABSTRCT_MAX_LENGTH]
                         else:
-                            item[k] = v
-        else:
-            for item in data:
-                for k, v in item.items():
-                    if isinstance(v, str):
-                        item[k] = v[:SearchMixin.ABSTRCT_MAX_LENGTH]
+                            item[k] = v[:SearchMixin.ABSTRCT_MAX_LENGTH]
+
+        for item in data:
+            for k, v in item.items():
+                if isinstance(v, str):
+                    item[k] = v[:SearchMixin.ABSTRCT_MAX_LENGTH]
         return result["hits"]["total"]["value"], data
 
 

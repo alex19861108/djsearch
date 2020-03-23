@@ -1,4 +1,5 @@
 .idea
+Dockerfile
 local_settings.py
 dist
 venv
