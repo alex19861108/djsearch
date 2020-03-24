@@ -11,10 +11,6 @@
 #############################
 from kombu import Exchange, Queue
 
-ALLOWED_HOSTS = ['*']
-LANGUAGE_CODE = 'zh-hans'
-TIME_ZONE = 'Asia/Shanghai'
-
 # DATABASES = {
 #     'default': {
 #         'ENGINE': 'django.db.backends.mysql',
@@ -69,15 +65,3 @@ CELERY_BEAT_SCHEDULE = {
         # 'args': (1, 2)
     }
 }
-
-# CELERY_QUEUES = (
-#     Queue('celery', Exchange('celery'), routing_key='celery'),
-# )
-#
-# CELERY_ROUTES = {
-#     'builder.tasks.add': {'queue': 'celery', 'routing_key': 'celery'},
-# }
-
-# CELERY_IMPORTS = (
-#     'builder.tasks'
-# )
