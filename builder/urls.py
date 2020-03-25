@@ -10,6 +10,6 @@ from django.urls import path
 from builder import views
 
 urlpatterns = [
-    path('add', views.add_delay),
+    path('build', views.build),
     path('reindex', views.ReIndexView.as_view()),
 ]

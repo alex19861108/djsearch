@@ -48,16 +48,16 @@ class IndexBuilder:
 
             # 根据api抓取数据
             log.info("[builder.load_resource]: {}".format(crawler_api))
-            # response = requests.get(crawler_api).json()
+            response = requests.get(crawler_api).json()
 
-            from crawler.mock import mock_portal, mock_forumpost, mock_wiki
-            if index == "portal":
-                mock_response = mock_portal
-            elif index == "forumpost":
-                mock_response = mock_forumpost
-            elif index == "wiki":
-                mock_response = mock_wiki
-            response = json.loads(mock_response)
+            # from crawler.mock import mock_portal, mock_forumpost, mock_wiki
+            # if index == "portal":
+            #     mock_response = mock_portal
+            # elif index == "forumpost":
+            #     mock_response = mock_forumpost
+            # elif index == "wiki":
+            #     mock_response = mock_wiki
+            # response = json.loads(mock_response)
             data = response.get("data")
 
             # 获取下一页的页码
@@ -80,12 +80,16 @@ class IndexBuilder:
                 else:
                     self.conn.index(index, document, id=id)
 
-    def build(self):
+    def build_all(self):
         for row in Resource.objects.filter(deleted=0):
             try:
                 self.load_resource(row)
             except Exception as e:
                 traceback.print_exc(e)
+
+    def build(self, index):
+        row = Resource.objects.filter(deleted=0).filter(name=index).first()
+        self.load_resource(row)
 
     def reindex(self, index):
         index_old = "{}_old.{}".format(index, datetime.date.today())

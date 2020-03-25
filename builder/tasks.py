@@ -18,11 +18,11 @@ log = logging.getLogger(__name__)
 
 
 @shared_task
-def build():
-    return IndexBuilder().build()
+def build_all():
+    return IndexBuilder().build_all()
 
 
 @shared_task
 def add(x, y):
-    log.info("==== receive shared_task ====")
+    log.info("receive shared_task, function [add]")
     return x + y
