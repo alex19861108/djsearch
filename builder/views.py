@@ -10,7 +10,7 @@ log = logging.getLogger(__name__)
 
 
 def build(request):
-    index = request.get("index", None)
+    index = request.GET.get("index", None)
     if not index:
         return JsonResponse({"status": -1, "message": "index is required", "data": []})
 
@@ -20,7 +20,7 @@ def build(request):
 
 class ReIndexView(View):
     def get(self, request):
-        index = request.get("index", None)
+        index = request.GET.get("index", None)
         if not index:
             return JsonResponse({
                 "status": -1,
