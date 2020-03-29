@@ -131,7 +131,7 @@ class SugView(SearchMixin, View):
     def get(self, request):
         index = request.GET.get("index", "portal").replace(" ", "")
         if index == "portal":
-            return self.portal_suggester(request, index)
+            return self.portal_suggester2(request, index)
         else:
             return self.term_suggester(request, index)
 
@@ -161,13 +161,13 @@ class SugView(SearchMixin, View):
 
         # 产品sug搜索时最多显示10条记录，防止搜索出的内容太多，导致下拉列表太长
         total, data = self._search(wd, index, start=start, size=size, sort=sort)
-        data = sorted(data, key=lambda x: (x[0]["title"], x[1]["title"]))
+        sorted_data = sorted(data, key=lambda x: (x["breadcrumb"][0]["title"], x["breadcrumb"][1]["title"]))
 
         level1_children = list()
         level2_children = list()
         level3_children = list()
         last_item = None
-        for item in data:
+        for item in sorted_data:
             if last_item and last_item["breadcrumb"][0]["title"] == item["breadcrumb"][0]["title"]:
                 if last_item["breadcrumb"][1] == item["breadcrumb"][1]:
                     level3_children.append({
@@ -177,7 +177,7 @@ class SugView(SearchMixin, View):
                         "desc": item["desc"],
                         "deleted": item["deleted"],
                         "permissions": item["permissions"],
-                        # "breadcrumb": item["breadcrumb"]
+                        "breadcrumb": item["breadcrumb"]
                     })
                 else:
                     level2_children.append({
@@ -200,7 +200,7 @@ class SugView(SearchMixin, View):
                         "desc": item["desc"],
                         "deleted": item["deleted"],
                         "permissions": item["permissions"],
-                        # "breadcrumb": item["breadcrumb"]
+                        "breadcrumb": item["breadcrumb"]
                     })
             else:
                 if last_item:
@@ -247,7 +247,8 @@ class SugView(SearchMixin, View):
                 "desc": last_item["breadcrumb"][1]["desc"],
                 "deleted": last_item["breadcrumb"][1]["deleted"],
                 "permissions": last_item["breadcrumb"][1]["permissions"],
-                "children": self.optimize_level3_nodes(level3_children)
+                # "children": self.optimize_level3_nodes(level3_children)
+                "children": level3_children
             })
             level1_children.append({
                 "id": last_item["breadcrumb"][0]["id"],

@@ -41,7 +41,7 @@ class IndexBuilder:
             self.conn.indices.create(index, {"mappings": {"properties": mapping}})
 
         # 组装要抓取的url
-        crawler_apis = config.get("apis")
+        crawler_apis = config.get("crawler_apis")
         for api_name, api_url in crawler_apis.items():
             self._load_resource(api_name, api_url, index)
 
@@ -53,7 +53,9 @@ class IndexBuilder:
             api_url = api_url.format(page)
             # 根据api抓取数据
             log.info("[builder.load_resource]: {}".format(api_url))
-            response = requests.get(api_url).json()
+            # response = requests.get(api_url).json()
+            from crawler.mock import mock_portal
+            response = json.loads(mock_portal)
             data = response.get("data")
 
             # 获取下一页的页码
@@ -65,7 +67,7 @@ class IndexBuilder:
             for document in data:
                 # 主键
                 # id = document.get("id")
-                id = base64.urlsafe_b64encode("{}@{}".format(api_name, document.get("primary_key")))
+                id = base64.urlsafe_b64encode("{}@{}".format(api_name, document.get("id")).encode("utf-8"))
                 # 删除标记
                 if self.conn.exists(index, id) is True:
                     if document.get("deleted", None):

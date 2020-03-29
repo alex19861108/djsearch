@@ -11,16 +11,16 @@
 #############################
 from kombu import Exchange, Queue
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.mysql',
-#         'NAME': 'search',
-#         'USER': 'root',
-#         'PASSWORD': '123456',
-#         'HOST': 'localhost',
-#         'PORT': '3306',
-#     }
-# }
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'search',
+        'USER': 'root',
+        'PASSWORD': '123456',
+        'HOST': '62.234.146.101',
+        'PORT': '13306',
+    }
+}
 
 #############################
 # third party app settings
