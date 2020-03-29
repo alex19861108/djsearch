@@ -14,8 +14,11 @@ def build(request):
     if not index:
         return JsonResponse({"status": -1, "message": "index is required", "data": []})
 
-    IndexBuilder().build(index)
-    return JsonResponse({"status": -1, "message": "success", "data": []})
+    ret = IndexBuilder().build(index)
+    if ret:
+        return JsonResponse({"status": 0, "message": "build [{}] success".format(index), "data": []})
+    else:
+        return JsonResponse({"status": 1, "message": "build [{}] failed".format(index), "data": []})
 
 
 class ReIndexView(View):

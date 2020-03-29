@@ -6,6 +6,7 @@
 @Description    :  
 @CreateTime     :  2020/3/14 19:26
 """
+import base64
 import requests
 import datetime
 import json
@@ -39,25 +40,20 @@ class IndexBuilder:
         if not self.conn.indices.exists(index):
             self.conn.indices.create(index, {"mappings": {"properties": mapping}})
 
+        # 组装要抓取的url
+        crawler_apis = config.get("apis")
+        for api_name, api_url in crawler_apis.items():
+            self._load_resource(api_name, api_url, index)
+
+    def _load_resource(self, api_name, api_url, index):
         # 数据入库
         is_last_page = False
         page = 1
         while is_last_page is False:
-            # 组装要抓取的url
-            crawler_api = config.get("api").format(page)
-
+            api_url = api_url.format(page)
             # 根据api抓取数据
-            log.info("[builder.load_resource]: {}".format(crawler_api))
-            response = requests.get(crawler_api).json()
-
-            # from crawler.mock import mock_portal, mock_forumpost, mock_wiki
-            # if index == "portal":
-            #     mock_response = mock_portal
-            # elif index == "forumpost":
-            #     mock_response = mock_forumpost
-            # elif index == "wiki":
-            #     mock_response = mock_wiki
-            # response = json.loads(mock_response)
+            log.info("[builder.load_resource]: {}".format(api_url))
+            response = requests.get(api_url).json()
             data = response.get("data")
 
             # 获取下一页的页码
@@ -67,10 +63,9 @@ class IndexBuilder:
 
             # 解析api返回的数据
             for document in data:
-                # 文档内容
-                # document = json.dumps(item)
                 # 主键
-                id = document.get("id")
+                # id = document.get("id")
+                id = base64.urlsafe_b64encode("{}@{}".format(api_name, document.get("primary_key")))
                 # 删除标记
                 if self.conn.exists(index, id) is True:
                     if document.get("deleted", None):
@@ -86,10 +81,17 @@ class IndexBuilder:
                 self.load_resource(row)
             except Exception as e:
                 traceback.print_exc(e)
+                return False
+        return True
 
     def build(self, index):
         row = Resource.objects.filter(deleted=0).filter(name=index).first()
-        self.load_resource(row)
+        try:
+            self.load_resource(row)
+        except Exception as e:
+            traceback.print_exc(e)
+            return False
+        return True
 
     def reindex(self, index):
         index_old = "{}_old.{}".format(index, datetime.date.today())
@@ -104,7 +106,6 @@ class IndexBuilder:
         }
         self.conn.reindex(body=body)
 
-        #
         body = {
             "actions": [
                 {

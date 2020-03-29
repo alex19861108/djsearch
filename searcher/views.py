@@ -2,6 +2,7 @@ from django.shortcuts import render
 
 # Create your views here.
 import json
+import operator
 from elasticsearch import Elasticsearch
 from django.views.generic import View
 
@@ -147,6 +148,123 @@ class SugView(SearchMixin, View):
             if not node["breadcrumb"]:
                 del nodes[idx]
         return nodes
+
+    def portal_suggester2(self, request, index="portal"):
+        wd = request.GET.get("wd", "").strip()
+        page = int(request.GET.get("page", 1))
+        size = int(request.GET.get("size", 10))
+        start = (page - 1) * size
+
+        sort = [
+            {"breadcrumb.title": {"nested": {"path": "breadcrumb"}}}
+        ]
+
+        # 产品sug搜索时最多显示10条记录，防止搜索出的内容太多，导致下拉列表太长
+        total, data = self._search(wd, index, start=start, size=size, sort=sort)
+        data = sorted(data, key=lambda x: (x[0]["title"], x[1]["title"]))
+
+        level1_children = list()
+        level2_children = list()
+        level3_children = list()
+        last_item = None
+        for item in data:
+            if last_item and last_item["breadcrumb"][0]["title"] == item["breadcrumb"][0]["title"]:
+                if last_item["breadcrumb"][1] == item["breadcrumb"][1]:
+                    level3_children.append({
+                        "id": item["id"],
+                        "title": item["title"],
+                        "url": item["url"],
+                        "desc": item["desc"],
+                        "deleted": item["deleted"],
+                        "permissions": item["permissions"],
+                        # "breadcrumb": item["breadcrumb"]
+                    })
+                else:
+                    level2_children.append({
+                        "id": last_item["breadcrumb"][1]["id"],
+                        "title": last_item["breadcrumb"][1]["title"],
+                        "url": last_item["breadcrumb"][1]["url"],
+                        "desc": last_item["breadcrumb"][1]["desc"],
+                        "deleted": last_item["breadcrumb"][1]["deleted"],
+                        "permissions": last_item["breadcrumb"][1]["permissions"],
+                        # "breadcrumb": last_item["breadcrumb"],
+                        # "children": self.optimize_level3_nodes(level3_children)
+                        "children": level3_children
+                    })
+
+                    level3_children = list()
+                    level3_children.append({
+                        "id": item["id"],
+                        "title": item["title"],
+                        "url": item["url"],
+                        "desc": item["desc"],
+                        "deleted": item["deleted"],
+                        "permissions": item["permissions"],
+                        # "breadcrumb": item["breadcrumb"]
+                    })
+            else:
+                if last_item:
+                    level2_children.append({
+                        "id": last_item["breadcrumb"][1]["id"],
+                        "title": last_item["breadcrumb"][1]["title"],
+                        "url": last_item["breadcrumb"][1]["url"],
+                        "desc": last_item["breadcrumb"][1]["desc"],
+                        "deleted": last_item["breadcrumb"][1]["deleted"],
+                        "permissions": last_item["breadcrumb"][1]["permissions"],
+                        # "breadcrumb": last_item["level2_ref"]["breadcrumb"],
+                        # "children": self.optimize_level3_nodes(level3_children)
+                        "children": level3_children
+                    })
+                    level1_children.append({
+                        "id": last_item["breadcrumb"][0]["id"],
+                        "title": last_item["breadcrumb"][0]["title"],
+                        "url": last_item["breadcrumb"][0]["url"],
+                        "desc": last_item["breadcrumb"][0]["desc"],
+                        "deleted": last_item["breadcrumb"][0]["deleted"],
+                        "permissions": last_item["breadcrumb"][0]["permissions"],
+                        "children": level2_children
+                    })
+                level2_children = list()
+                level3_children = list()
+                level3_children.append({
+                    "id": item["id"],
+                    "title": item["title"],
+                    "url": item["url"],
+                    "desc": item["desc"],
+                    "deleted": item["deleted"],
+                    "permissions": item["permissions"],
+                    "breadcrumb": item["breadcrumb"]
+                })
+
+            last_item = item
+
+        # 处理最后一条记录
+        if level3_children:
+            level2_children.append({
+                "id": last_item["breadcrumb"][1]["id"],
+                "title": last_item["breadcrumb"][1]["title"],
+                "url": last_item["breadcrumb"][1]["url"],
+                "desc": last_item["breadcrumb"][1]["desc"],
+                "deleted": last_item["breadcrumb"][1]["deleted"],
+                "permissions": last_item["breadcrumb"][1]["permissions"],
+                "children": self.optimize_level3_nodes(level3_children)
+            })
+            level1_children.append({
+                "id": last_item["breadcrumb"][0]["id"],
+                "title": last_item["breadcrumb"][0]["title"],
+                "url": last_item["breadcrumb"][0]["url"],
+                "desc": last_item["breadcrumb"][0]["desc"],
+                "deleted": last_item["breadcrumb"][0]["deleted"],
+                "permissions": last_item["breadcrumb"][0]["permissions"],
+                "children": level2_children
+            })
+
+        return JsonResponse({
+            "total": total,
+            "data": level1_children,
+            "page": page,
+            "size": size
+        })
 
     def portal_suggester(self, request, index="portal"):
         wd = request.GET.get("wd", "").strip()
