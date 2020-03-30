@@ -169,16 +169,15 @@ class SugView(SearchMixin, View):
                     if key != "breadcrumb":
                         item["breadcrumb"][-1][key] = value
 
-
         # 重新排序
         from collections import OrderedDict
         cached_dict = OrderedDict()
         for item in data:
-            level1_id = item["breadcrumb"][0]["id"]
-            level2_id = item["breadcrumb"][1]["id"]
-            if level1_id not in cached_dict:
+            level1_id = item["breadcrumb"][0]["title"]
+            level2_id = item["breadcrumb"][1]["title"]
+            if level1_id not in cached_dict.keys():
                 cached_dict[level1_id] = OrderedDict()
-            if level2_id not in cached_dict[level1_id]:
+            if level2_id not in cached_dict[level1_id].keys():
                 cached_dict[level1_id][level2_id] = []
             cached_dict[level1_id][level2_id].append(item)
 
