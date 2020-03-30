@@ -131,11 +131,11 @@ class SugView(SearchMixin, View):
     def get(self, request):
         index = request.GET.get("index", "portal").replace(" ", "")
         if index == "portal":
-            return self.portal_suggester2(request, index)
+            return self.portal_suggester(request, index)
         else:
             return self.term_suggester(request, index)
 
-    def optimize_level3_nodes(self, nodes):
+    def optimize_level3_refs(self, nodes):
         """
         三级菜单中会存在breadcrumb为空的，需要删除
         :param nodes:
@@ -149,7 +149,7 @@ class SugView(SearchMixin, View):
                 del nodes[idx]
         return nodes
 
-    def portal_suggester2(self, request, index="portal"):
+    def portal_suggester(self, request, index="portal"):
         wd = request.GET.get("wd", "").strip()
         page = int(request.GET.get("page", 1))
         size = int(request.GET.get("size", 10))
@@ -177,7 +177,7 @@ class SugView(SearchMixin, View):
                         "desc": item["desc"],
                         "deleted": item["deleted"],
                         "permissions": item["permissions"],
-                        "breadcrumb": item["breadcrumb"]
+                        "breadcrumb": item["breadcrumb"][2:]
                     })
                 else:
                     level2_children.append({
@@ -188,8 +188,8 @@ class SugView(SearchMixin, View):
                         "deleted": last_item["breadcrumb"][1]["deleted"],
                         "permissions": last_item["breadcrumb"][1]["permissions"],
                         # "breadcrumb": last_item["breadcrumb"],
-                        # "children": self.optimize_level3_nodes(level3_children)
-                        "children": level3_children
+                        "children": self.optimize_level3_refs(level3_children)
+                        # "children": level3_children
                     })
 
                     level3_children = list()
@@ -200,7 +200,7 @@ class SugView(SearchMixin, View):
                         "desc": item["desc"],
                         "deleted": item["deleted"],
                         "permissions": item["permissions"],
-                        "breadcrumb": item["breadcrumb"]
+                        "breadcrumb": item["breadcrumb"][2:]
                     })
             else:
                 if last_item:
@@ -212,8 +212,8 @@ class SugView(SearchMixin, View):
                         "deleted": last_item["breadcrumb"][1]["deleted"],
                         "permissions": last_item["breadcrumb"][1]["permissions"],
                         # "breadcrumb": last_item["level2_ref"]["breadcrumb"],
-                        # "children": self.optimize_level3_nodes(level3_children)
-                        "children": level3_children
+                        "children": self.optimize_level3_refs(level3_children)
+                        # "children": level3_children
                     })
                     level1_children.append({
                         "id": last_item["breadcrumb"][0]["id"],
@@ -233,7 +233,7 @@ class SugView(SearchMixin, View):
                     "desc": item["desc"],
                     "deleted": item["deleted"],
                     "permissions": item["permissions"],
-                    "breadcrumb": item["breadcrumb"]
+                    "breadcrumb": item["breadcrumb"][2:]
                 })
 
             last_item = item
@@ -247,8 +247,8 @@ class SugView(SearchMixin, View):
                 "desc": last_item["breadcrumb"][1]["desc"],
                 "deleted": last_item["breadcrumb"][1]["deleted"],
                 "permissions": last_item["breadcrumb"][1]["permissions"],
-                # "children": self.optimize_level3_nodes(level3_children)
-                "children": level3_children
+                "children": self.optimize_level3_refs(level3_children)
+                # "children": level3_children
             })
             level1_children.append({
                 "id": last_item["breadcrumb"][0]["id"],
@@ -257,105 +257,6 @@ class SugView(SearchMixin, View):
                 "desc": last_item["breadcrumb"][0]["desc"],
                 "deleted": last_item["breadcrumb"][0]["deleted"],
                 "permissions": last_item["breadcrumb"][0]["permissions"],
-                "children": level2_children
-            })
-
-        return JsonResponse({
-            "total": total,
-            "data": level1_children,
-            "page": page,
-            "size": size
-        })
-
-    def portal_suggester(self, request, index="portal"):
-        wd = request.GET.get("wd", "").strip()
-        page = int(request.GET.get("page", 1))
-        size = int(request.GET.get("size", 10))
-        start = (page - 1) * size
-
-        sort = [
-            {"level1_ref.title": {"nested": {"path": "level1_ref"}}},
-            {"level2_ref.title": {"nested": {"path": "level2_ref"}}}
-        ]
-
-        # 产品sug搜索时最多显示10条记录，防止搜索出的内容太多，导致下拉列表太长
-        total, data = self._search(wd, index, start=start, size=size, sort=sort)
-
-        level1_children = list()
-        level2_children = list()
-        level3_children = list()
-        last_item = None
-        for item in data:
-            if last_item and last_item["level1_ref"]["title"] == item["level1_ref"]["title"]:
-                if last_item["level2_ref"] == item["level2_ref"]:
-                    level3_children.append({
-                        "name": item["name"],
-                        "url": item["url"],
-                        "title": item["title"],
-                        "desc": item["desc"],
-                        "breadcrumb": item["breadcrumb"]
-                    })
-                else:
-                    level2_children.append({
-                        "name": last_item["level2_ref"]["name"],
-                        "url": last_item["level2_ref"]["url"],
-                        "title": last_item["level2_ref"]["title"],
-                        "desc": last_item["level2_ref"]["desc"],
-                        # "breadcrumb": last_item["breadcrumb"],
-                        "children": self.optimize_level3_nodes(level3_children)
-                    })
-
-                    level3_children = list()
-                    level3_children.append({
-                        "name": item["name"],
-                        "url": item["url"],
-                        "title": item["title"],
-                        "desc": item["desc"],
-                        "breadcrumb": item["breadcrumb"]
-                    })
-            else:
-                if last_item:
-                    level2_children.append({
-                        "name": last_item["level2_ref"]["name"],
-                        "url": last_item["level2_ref"]["url"],
-                        "title": last_item["level2_ref"]["title"],
-                        "desc": last_item["level2_ref"]["desc"],
-                        # "breadcrumb": last_item["level2_ref"]["breadcrumb"],
-                        "children": self.optimize_level3_nodes(level3_children)
-                    })
-                    level1_children.append({
-                        "name": last_item["level1_ref"]["name"],
-                        "url": last_item["level1_ref"]["url"],
-                        "title": last_item["level1_ref"]["title"],
-                        "desc": last_item["level1_ref"]["desc"],
-                        "children": level2_children
-                    })
-                level2_children = list()
-                level3_children = list()
-                level3_children.append({
-                    "name": item["name"],
-                    "url": item["url"],
-                    "title": item["title"],
-                    "desc": item["desc"],
-                    "breadcrumb": item["breadcrumb"]
-                })
-
-            last_item = item
-
-        # 处理最后一条记录
-        if level3_children:
-            level2_children.append({
-                "name": last_item["level2_ref"]["name"],
-                "url": last_item["level2_ref"]["url"],
-                "title": last_item["level2_ref"]["title"],
-                "desc": last_item["level2_ref"]["desc"],
-                "children": self.optimize_level3_nodes(level3_children)
-            })
-            level1_children.append({
-                "name": last_item["level1_ref"]["name"],
-                "url": last_item["level1_ref"]["url"],
-                "title": last_item["level1_ref"]["title"],
-                "desc": last_item["level1_ref"]["desc"],
                 "children": level2_children
             })
 
