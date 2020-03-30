@@ -156,7 +156,7 @@ class SugView(SearchMixin, View):
         start = (page - 1) * size
 
         sort = [
-            {"breadcrumb.title": {"nested": {"path": "breadcrumb"}}}
+            # {"breadcrumb.title": {"nested": {"path": "breadcrumb"}}}
         ]
 
         # 产品sug搜索时最多显示10条记录，防止搜索出的内容太多，导致下拉列表太长

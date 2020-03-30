@@ -53,9 +53,9 @@ class IndexBuilder:
             api_url = api_url.format(page)
             # 根据api抓取数据
             log.info("[builder.load_resource]: {}".format(api_url))
-            # response = requests.get(api_url).json()
-            from crawler.mock import mock_portal
-            response = json.loads(mock_portal)
+            response = requests.get(api_url).json()
+            # from crawler.mock import mock_portal
+            # response = json.loads(mock_portal)
             data = response.get("data")
 
             # 获取下一页的页码
