@@ -166,8 +166,8 @@ class SugView(SearchMixin, View):
         from collections import OrderedDict
         cached_dict = OrderedDict()
         for item in data:
-            level1_id = item["breadcrumb"][0]["id"]
-            level2_id = item["breadcrumb"][1]["id"]
+            level1_id = item["breadcrumb"][0]["title"]
+            level2_id = item["breadcrumb"][1]["title"]
             if level1_id not in cached_dict.keys():
                 cached_dict[level1_id] = OrderedDict()
             if level2_id not in cached_dict[level1_id].keys():
