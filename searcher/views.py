@@ -181,7 +181,7 @@ class SugView(SearchMixin, View):
 
         # 飘红处理
         for item in sorted_data:
-            if item["breadcrumb"]:
+            if len(item["breadcrumb"]) >= 2:
                 for key, value in item.items():
                     if key != "breadcrumb":
                         item["breadcrumb"][-1][key] = value
