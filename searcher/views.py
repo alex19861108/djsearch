@@ -161,8 +161,34 @@ class SugView(SearchMixin, View):
 
         # 产品sug搜索时最多显示10条记录，防止搜索出的内容太多，导致下拉列表太长
         total, data = self._search(wd, index, start=start, size=size, sort=sort)
-        sorted_data = sorted(data, key=lambda x: (x["breadcrumb"][0]["title"], x["breadcrumb"][1]["title"]))
 
+        # 飘红处理
+        for item in data:
+            if item["breadcrumb"]:
+                for key, value in item.items():
+                    if key != "breadcrumb":
+                        item["breadcrumb"][-1][key] = value
+
+
+        # 重新排序
+        from collections import OrderedDict
+        cached_dict = OrderedDict()
+        for item in data:
+            level1_id = item["breadcrumb"][0]["id"]
+            level2_id = item["breadcrumb"][1]["id"]
+            if level1_id not in cached_dict:
+                cached_dict[level1_id] = OrderedDict()
+            if level2_id not in cached_dict[level1_id]:
+                cached_dict[level1_id][level2_id] = []
+            cached_dict[level1_id][level2_id].append(item)
+
+        sorted_data = list()
+        for level1_id, level1_group in cached_dict.items():
+            for level2_id, level2_group in level1_group.items():
+                sorted_data.extend(level2_group)
+        # sorted_data = sorted(data, key=lambda x: (x["breadcrumb"][0]["title"], x["breadcrumb"][1]["title"]))
+
+        # 结果合并成前端展现格式
         level1_children = list()
         level2_children = list()
         level3_children = list()
