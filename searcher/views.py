@@ -51,18 +51,16 @@ class SearchMixin:
             },
             # "query": {
             #     "bool": {
-            #         "should": [{
-            #             "match_phrase": {
-            #                 "title": {
-            #                     "query": wd,
-            #                     "slop": 1
+            #         "must": [{
+            #             "multi_match": {
+            #                 "query": wd
             #                 }
             #             }
             #         }, {
-            #             "multi_match": {
-            #                 "query": wd,
-            #                 "type": "best_fields",
-            #                 "fields": fields,
+            #             "term": {
+            #                 "permission": {
+            #                     "value": ""
+            #                 }
             #             }
             #         }]
             #     }
