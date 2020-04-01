@@ -2,13 +2,31 @@ from django.shortcuts import render
 
 # Create your views here.
 import json
-import operator
+import requests
 from elasticsearch import Elasticsearch
 from django.views.generic import View
+from django.core.cache import cache
 
 from djsearch import settings
 from djsearch.utils import JsonResponse
 from crawler.models import Resource
+
+
+def get_user_permissions(ad_username):
+    if not ad_username:
+        return []
+
+    permissions = cache.get(ad_username)
+    if permissions:
+        return permissions
+
+    url = settings.ITM_DOAMIN + "/api/getUserPermissions"
+    resp = requests.post(url, json={"userId": ad_username}).json()
+    if "success" in resp and resp["success"] is True:
+        permissions = [v["name"] for v in resp["data"][ad_username]]
+        cache.set(ad_username, permissions, settings.CACHE_REDIS_EXPIRE)
+        return permissions
+    return ["fCommon"]
 
 
 class IndicesView(View):
@@ -39,42 +57,69 @@ class SearchMixin:
                 fields.append(column)
         return fields
 
-    def _search(self, wd, index, **kwargs):
-        fields = self.generate_fields(index)
-        body = {
-            "query": {
-                "multi_match": {
-                    "query": wd,
-                    "type": "best_fields",
-                    "fields": fields,
+    def make_conditions(self, permissions):
+        result = list()
+        for perm in permissions:
+            result.append(
+                {
+                    "match": {
+                        "permissions": perm
+                    }
                 }
-            },
-            # "query": {
-            #     "bool": {
-            #         "must": [{
-            #             "multi_match": {
-            #                 "query": wd
-            #                 }
-            #             }
-            #         }, {
-            #             "term": {
-            #                 "permission": {
-            #                     "value": ""
-            #                 }
-            #             }
-            #         }]
-            #     }
-            # },
-            "highlight": {
-                "pre_tags": ['<b style="color:red;">'],
-                "post_tags": ['</b>'],
-                "fields": {key: {} for key in fields}
+            )
+        return result
+
+    def make_body(self, wd, fields, permissions, **kwargs):
+        if not permissions:
+            body = {
+                "query": {
+                    "multi_match": {
+                        "query": wd,
+                        "type": "best_fields",
+                        "fields": fields,
+                    }
+                },
+
             }
-        }
+        else:
+            should_conditions = self.make_conditions(permissions)
+            body = {
+                "query": {
+                    "bool": {
+                        "must": [{
+                            "multi_match": {
+                                "query": wd,
+                                "type": "best_fields",
+                                "fields": fields,
+                            }
+                        }, {
+                            "bool": {
+                                "should": should_conditions
+                            }
+                        }]
+                    }
+                },
+            }
+        # 高亮
+        body.update(
+            {
+                "highlight": {
+                    "pre_tags": ['<b style="color:red;">'],
+                    "post_tags": ['</b>'],
+                    "fields": {key: {} for key in fields}
+                }
+            })
+        # 起止
         if 'start' in kwargs.keys():
             kwargs['from'] = kwargs['start']
             del kwargs['start']
         body.update(kwargs)
+        return body
+
+    def _search(self, wd, index, permissions=None, **kwargs):
+        fields = self.generate_fields(index)
+
+        body = self.make_body(wd, fields, permissions, **kwargs)
 
         result = self.conn.search(index=index, body=body)
 
@@ -148,17 +193,19 @@ class SugView(SearchMixin, View):
         return nodes
 
     def portal_suggester(self, request, index="portal"):
+        username = request.GET.get("userName", "").strip()
         wd = request.GET.get("wd", "").strip()
         page = int(request.GET.get("page", 1))
         size = int(request.GET.get("size", 10))
         start = (page - 1) * size
+        permissions = get_user_permissions(username)
 
         sort = [
             # {"breadcrumb.title": {"nested": {"path": "breadcrumb"}}}
         ]
 
         # 产品sug搜索时最多显示10条记录，防止搜索出的内容太多，导致下拉列表太长
-        total, data = self._search(wd, index, start=start, size=size, sort=sort)
+        total, data = self._search(wd, index, permissions=permissions, start=start, size=size, sort=sort)
 
         # 重新排序
         from collections import OrderedDict

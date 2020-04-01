@@ -22,6 +22,20 @@ DATABASES = {
     }
 }
 
+SESSION_ENGINE = "django.contrib.sessions.backends.cache"
+SESSION_CACHE_ALIAS = "default"
+
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://127.0.0.1:6379/1",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        }
+    }
+}
+CACHE_REDIS_EXPIRE = 60*60
+
 #############################
 # third party app settings
 #############################
@@ -32,6 +46,7 @@ SENTRY_DSN = "http://cb1b4f982c7142dab41c1324ab3d7459@localhost:9000/3"
 #############################
 # my app settings
 #############################
+ITM_DOAMIN = "http://128.194.224.146:8000"
 BUILDER = {
     "ES_HOSTS": ["http://62.234.146.101:9200"]
 }
@@ -52,8 +67,8 @@ CELERYD_FORCE_EXECV = True
 CELERYD_MAX_TASKS_PER_CHILD = 100
 CELERYD_TASK_TIME_LIMIT = 12*30
 
-CELERY_BROKER_URL = 'redis://127.0.0.1:6379/1'
-CELERY_RESULT_BACKEND = 'redis://127.0.0.1:6379/1'
+CELERY_BROKER_URL = 'redis://127.0.0.1:6379/2'
+CELERY_RESULT_BACKEND = 'redis://127.0.0.1:6379/2'
 # CELERY_CACHE_BACKEND = 'django-cache'
 
 CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers.DatabaseScheduler'
