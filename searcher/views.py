@@ -69,37 +69,17 @@ class SearchMixin:
             )
         return result
 
-    def make_body(self, wd, fields, permissions, **kwargs):
-        if not permissions:
-            body = {
-                "query": {
-                    "multi_match": {
-                        "query": wd,
-                        "type": "best_fields",
-                        "fields": fields,
-                    }
-                },
+    def make_body(self, wd, fields, **kwargs):
+        body = {
+            "query": {
+                "multi_match": {
+                    "query": wd,
+                    "type": "best_fields",
+                    "fields": fields,
+                }
+            },
 
-            }
-        else:
-            should_conditions = self.make_conditions(permissions)
-            body = {
-                "query": {
-                    "bool": {
-                        "must": [{
-                            "multi_match": {
-                                "query": wd,
-                                "type": "best_fields",
-                                "fields": fields,
-                            }
-                        }, {
-                            "bool": {
-                                "should": should_conditions
-                            }
-                        }]
-                    }
-                },
-            }
+        }
         # 高亮
         body.update(
             {
@@ -116,10 +96,10 @@ class SearchMixin:
         body.update(kwargs)
         return body
 
-    def _search(self, wd, index, permissions=None, **kwargs):
+    def _search(self, wd, index, **kwargs):
         fields = self.generate_fields(index)
 
-        body = self.make_body(wd, fields, permissions, **kwargs)
+        body = self.make_body(wd, fields, **kwargs)
 
         result = self.conn.search(index=index, body=body)
 
@@ -178,6 +158,55 @@ class SugView(SearchMixin, View):
         else:
             return self.term_suggester(request, index)
 
+    def make_body(self, wd, fields, **kwargs):
+        permissions = kwargs["permissions"]
+        del kwargs["permissions"]
+        if not permissions:
+            body = {
+                "query": {
+                    "multi_match": {
+                        "query": wd,
+                        "type": "best_fields",
+                        "fields": fields,
+                    }
+                },
+
+            }
+        else:
+            should_conditions = self.make_conditions(permissions)
+            body = {
+                "query": {
+                    "bool": {
+                        "must": [{
+                            "multi_match": {
+                                "query": wd,
+                                "type": "best_fields",
+                                "fields": fields,
+                            }
+                        }, {
+                            "bool": {
+                                "should": should_conditions
+                            }
+                        }]
+                    }
+                },
+            }
+        # 高亮
+        body.update(
+            {
+                "highlight": {
+                    "pre_tags": ['<b style="color:red;">'],
+                    "post_tags": ['</b>'],
+                    "fields": {key: {} for key in fields}
+                }
+            })
+        # 起止
+        if 'start' in kwargs.keys():
+            kwargs['from'] = kwargs['start']
+            del kwargs['start']
+        body.update(kwargs)
+        return body
+
     def optimize_level3_refs(self, nodes):
         """
         三级菜单中会存在breadcrumb为空的，需要删除
@@ -205,7 +234,7 @@ class SugView(SearchMixin, View):
         ]
 
         # 产品sug搜索时最多显示10条记录，防止搜索出的内容太多，导致下拉列表太长
-        total, data = self._search(wd, index, permissions=permissions, start=start, size=size, sort=sort)
+        total, data = self._search(wd, index, start=start, size=size, sort=sort, permissions=permissions)
 
         # 重新排序
         from collections import OrderedDict
