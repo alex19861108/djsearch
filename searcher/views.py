@@ -24,6 +24,8 @@ def get_user_permissions(ad_username):
     resp = requests.post(url, json={"userId": ad_username}).json()
     if "success" in resp and resp["success"] is True:
         permissions = [v["name"] for v in resp["data"][ad_username]]
+        if 'fCommon' not in permissions:
+            permissions.append('fCommon')
         cache.set(ad_username, permissions, settings.CACHE_REDIS_EXPIRE)
         return permissions
     return ["fCommon"]
