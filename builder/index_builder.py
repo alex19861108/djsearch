@@ -38,6 +38,7 @@ class IndexBuilder:
 
         # 建index，建mapping
         if not self.conn.indices.exists(index):
+            # self.conn.indices.create(index, mapping)
             self.conn.indices.create(index, {"mappings": {"properties": mapping}})
 
         # 组装要抓取的url
