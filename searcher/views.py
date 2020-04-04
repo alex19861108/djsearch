@@ -13,8 +13,9 @@ from crawler.models import Resource
 
 
 def get_user_permissions(ad_username):
+    perm_common = "fCommon"
     if not ad_username:
-        return []
+        return [perm_common]
 
     permissions = cache.get(ad_username)
     if permissions:
@@ -24,11 +25,11 @@ def get_user_permissions(ad_username):
     resp = requests.post(url, json={"userId": ad_username}).json()
     if "success" in resp and resp["success"] is True:
         permissions = [v["name"] for v in resp["data"][ad_username]]
-        if 'fCommon' not in permissions:
-            permissions.append('fCommon')
+        if perm_common not in permissions:
+            permissions.append(perm_common)
         cache.set(ad_username, permissions, settings.CACHE_REDIS_EXPIRE)
         return permissions
-    return ["fCommon"]
+    return [perm_common]
 
 
 class IndicesView(View):
