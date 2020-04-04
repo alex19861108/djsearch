@@ -166,10 +166,18 @@ class SugView(SearchMixin, View):
         if not permissions:
             body = {
                 "query": {
-                    "multi_match": {
-                        "query": wd,
-                        "type": "best_fields",
-                        "fields": fields,
+                    "bool": {
+                        "must": [{
+                            "multi_match": {
+                                "query": wd,
+                                "type": "best_fields",
+                                "fields": fields,
+                            }
+                        }, {
+                            "term": {
+                                "deleted": 0
+                            }
+                        }]
                     }
                 },
 
@@ -188,6 +196,10 @@ class SugView(SearchMixin, View):
                         }, {
                             "bool": {
                                 "should": should_conditions
+                            }
+                        }, {
+                            "term": {
+                                "deleted": 0
                             }
                         }]
                     }
