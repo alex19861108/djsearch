@@ -11,16 +11,16 @@
 #############################
 from kombu import Exchange, Queue
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'search',
-        'USER': 'root',
-        'PASSWORD': '123456',
-        'HOST': '62.234.146.101',
-        'PORT': '13306',
-    }
-}
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.mysql',
+#         'NAME': 'search',
+#         'USER': 'root',
+#         'PASSWORD': '123456',
+#         'HOST': '62.234.146.101',
+#         'PORT': '13306',
+#     }
+# }
 
 SESSION_ENGINE = "django.contrib.sessions.backends.cache"
 SESSION_CACHE_ALIAS = "default"
@@ -73,10 +73,10 @@ CELERY_RESULT_BACKEND = 'redis://127.0.0.1:6379/2'
 
 CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers.DatabaseScheduler'
 CELERY_BEAT_SCHEDULE = {
-    'build every day': {
-        'task': 'builder.tasks.build',
-        'schedule': crontab(minute=0, hour=0),
-        # 'schedule': timedelta(days=1),
-        # 'args': (1, 2)
+    'interval': {
+        'task': 'builder.tasks.add',
+        # 'schedule': crontab(minute=0, hour=0),
+        'schedule': timedelta(seconds=2),
+        'args': (1, 2)
     }
 }
