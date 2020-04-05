@@ -21,4 +21,4 @@ EXPOSE 8000
 EXPOSE 5555
 
 #CMD ["uwsgi", "--ini", "conf/uwsgi.ini"]
-ENTRYPOINT ["/home/work/djsearch/entrypoint.sh"]
+ENTRYPOINT ["sh", "/home/work/djsearch/entrypoint.sh"]
