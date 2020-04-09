@@ -65,7 +65,7 @@ class IndexBuilder:
             data = resp_dict.get("data")
 
             # 获取下一页的页码
-            size, page, total = resp_dict.get("size"), resp_dict.get("page"), resp_dict.get("total")
+            size, page, total = int(resp_dict.get("size")), int(resp_dict.get("page")), int(resp_dict.get("total"))
             is_last_page = page == math.ceil(total / size)
             page += 1
 
