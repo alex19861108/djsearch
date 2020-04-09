@@ -51,16 +51,21 @@ class IndexBuilder:
         is_last_page = False
         page = 1
         while is_last_page is False:
-            api_url = api_url.format(page)
+            fetch_url = api_url.format(page)
             # 根据api抓取数据
-            log.info("[builder.load_resource]: {}".format(api_url))
-            response = requests.get(api_url).json()
+            log.info("[builder.load_resource]: {}".format(fetch_url))
+            response = requests.get(fetch_url)
+            if response.status_code != 200:
+                log.error("[builder.load_resource]: {}, status_code: {}".format(fetch_url, response.status_code))
+                break
+
             # from crawler.mock import mock_portal
-            # response = json.loads(mock_portal)
-            data = response.get("data")
+            # resp_data = json.loads(mock_portal)
+            resp_dict = json.loads(response.text)
+            data = resp_dict.get("data")
 
             # 获取下一页的页码
-            size, page, total = response.get("size"), response.get("page"), response.get("total")
+            size, page, total = resp_dict.get("size"), resp_dict.get("page"), resp_dict.get("total")
             is_last_page = page == math.ceil(total / size)
             page += 1
 
