@@ -34,7 +34,7 @@ def get_user_permissions(ad_username):
 
 class IndicesView(View):
     def get(self, request):
-        resources = Resource.objects.filter(deleted=0).order_by('order')
+        resources = Resource.objects.filter(enable_shown=True).order_by('order')
         data = [{"name": item.name, "cn_name": item.cn_name} for item in resources]
         return JsonResponse(data)
 
@@ -46,7 +46,7 @@ class SearchMixin:
 
     def __init__(self):
         self.conn = Elasticsearch(hosts=settings.BUILDER.get("ES_HOSTS"))
-        self.index = ",".join([item.name for item in Resource.objects.filter(can_search=True)])
+        self.index = ",".join([item.name for item in Resource.objects.filter(enable_search=True)])
 
     def generate_fields(self, index):
         fields = list()

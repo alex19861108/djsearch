@@ -12,8 +12,9 @@ class Resource(models.Model):
     create_time = models.DateTimeField(verbose_name="接入时间", auto_now_add=True)
     contact = models.CharField(verbose_name="联系人", max_length=20)
     desc = models.TextField(verbose_name="资源描述")
-    can_index = models.BooleanField(verbose_name="是否可以建索引", default=True)
-    can_search = models.BooleanField(verbose_name="是否可以被搜索", default=True)
+    enable_build = models.BooleanField(verbose_name="是否启用建库", default=True)
+    enable_search = models.BooleanField(verbose_name="是否启用搜索", default=True)
+    enable_shown = models.BooleanField(verbose_name="是否在主页显示当前门类", default=True)
     order = models.IntegerField(verbose_name="排序序号", default=0)
 
     class Meta:
