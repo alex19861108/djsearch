@@ -20,5 +20,5 @@ RUN sed -i '36,37d' /usr/local/lib/python3.8/site-packages/django/db/backends/my
 EXPOSE 8000
 EXPOSE 5555
 
-#CMD ["uwsgi", "--ini", "conf/uwsgi.ini"]
-ENTRYPOINT ["sh", "/home/work/djsearch/entrypoint.sh"]
+CMD ["uwsgi", "--ini", "conf/uwsgi.ini"]
+#ENTRYPOINT ["sh", "/home/work/djsearch/entrypoint.sh"]

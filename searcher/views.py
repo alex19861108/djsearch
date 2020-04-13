@@ -46,7 +46,7 @@ class SearchMixin:
 
     def __init__(self):
         self.conn = Elasticsearch(hosts=settings.BUILDER.get("ES_HOSTS"))
-        self.index = ",".join([item.name for item in Resource.objects.filter(deleted=0)])
+        self.index = ",".join([item.name for item in Resource.objects.filter(can_search=True)])
 
     def generate_fields(self, index):
         fields = list()
