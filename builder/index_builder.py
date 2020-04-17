@@ -84,7 +84,7 @@ class IndexBuilder:
                     self.conn.index(index, document, id=id)
 
     def build_all(self):
-        for row in Resource.objects.filter(enabel_build=True):
+        for row in Resource.objects.filter(enable_build=True):
             try:
                 self.load_resource(row)
             except Exception as e:
@@ -93,7 +93,7 @@ class IndexBuilder:
         return True
 
     def build(self, index):
-        row = Resource.objects.filter(enabel_build=True).filter(name=index).first()
+        row = Resource.objects.filter(enable_build=True).filter(name=index).first()
         try:
             self.load_resource(row)
         except Exception as e:
