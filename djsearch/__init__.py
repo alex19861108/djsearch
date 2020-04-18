@@ -3,12 +3,10 @@ from __future__ import absolute_import, unicode_literals
 import pymysql
 import sentry_sdk
 from sentry_sdk.integrations.django import DjangoIntegration
-# from gevent import monkey
 
 from djsearch import settings
 from djsearch.celery import app as celery_app
 
-# monkey.patch_all()
 
 # mysql
 pymysql.install_as_MySQLdb()

@@ -13,11 +13,16 @@ django-celery-results==1.2.1
 django-cors-headers==3.2.1
 django-redis==4.11.0
 django-timezone-field==4.0
-elasticsearch==7.5.1
+dnspython==1.16.0
+elasticsearch==7.6.0
+eventlet==0.25.2
 flower==0.9.3
+gevent==1.5.0
+greenlet==0.4.15
 idna==2.9
 importlib-metadata==1.5.0
 kombu==4.6.8
+monotonic==1.5
 mysqlclient==1.4.6
 PyMySQL==0.9.3
 python-crontab==2.4.0

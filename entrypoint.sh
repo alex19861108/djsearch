@@ -7,10 +7,11 @@ flower -A djsearch --broker=redis://:111111@128.196.245.160:30017/12 &
 celery -A djsearch beat --detach
 
 # 启动worker Windows
-# celery -A djsearch worker -l info -P eventlet
+#celery -A djsearch worker -l info -P eventlet
 
 # 启动worker Linux
-celery -A djsearch worker -l info --detach
+#celery -A djsearch worker -l info --detach
+celery -A djsearch worker -l info
 
 # 启动django
-uwsgi --ini conf/uwsgi.ini
+#uwsgi --ini conf/uwsgi.ini
