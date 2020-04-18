@@ -17,7 +17,7 @@ RUN pip install -i https://pypi.tuna.tsinghua.edu.cn/simple -r conf/requirements
 
 RUN sed -i '36,37d' /usr/local/lib/python3.8/site-packages/django/db/backends/mysql/base.py
 
-# EXPOSE 8000
+EXPOSE 8000
 EXPOSE 5555
 
 # CMD ["uwsgi", "--ini", "conf/uwsgi.ini"]
